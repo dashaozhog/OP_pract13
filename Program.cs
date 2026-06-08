@@ -14,30 +14,46 @@ namespace OP_pract13
     //MessageBox.
     public class AlarmClock
     {
-        System.Timers.Timer timer;
+        private System.Timers.Timer timer;
+        private DateTime alarmTime;
+        private bool isAlarmSet;
+
+        public event EventHandler Alarm;
 
         public AlarmClock()
         {
             timer = new System.Timers.Timer();
             timer.Interval = 1000;
-            timer.Elapsed += Timer_Elapsed;
         }
-        private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        public void setAlarm(DateTime time)
         {
-            DateTime currentTime = DateTime.Now;
-            DateTime userTime = dateTimePicker1.Value;
-            // Check if current time matches the alarm time
-            if (currentTime.Hour == userTime.Hour && currentTime.Minute == userTime.Minute && currentTime.Second == userTime.Second)
+            alarmTime = time;
+            isAlarmSet = true;
+        }
+
+        public void stopAlarm()
+        {
+            isAlarmSet = false;
+        }
+
+
+        private void TimerTick(object sender, EventArgs e)
+        {
+            if (isAlarmSet)
             {
-                timer.Stop();
-                UpdateLable upd = UpdateDataLable;
-                //Update label control in mutiple thread
-                if (lblStatus.InvokeRequired)
-                    Invoke(upd, lblStatus, "Stop"); // Ensures thread-safe updates to the label control in a multi-threaded environment.
-                                                    // Trigger the alarm (play a sound, show a message, etc.)
-                MessageBox.Show("Ring ring ring...", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (DateTime.Now == alarmTime)
+                {
+                    isAlarmSet = false;
+                    OnAlarm(EventArgs.Empty);
+                }
             }
         }
+
+        protected virtual void OnAlarm(EventArgs e)
+        {
+            Alarm?.Invoke(this, e);
+        }
+        
     }
 
 
